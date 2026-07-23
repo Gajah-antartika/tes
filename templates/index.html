@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloud Inventory</title>
+    <!-- Memanggil CSS Lokal dari static/css/bootstrap.min.css -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <style>
+        @media print {
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body class="bg-light">
+
+    {% if session.user_id %}
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 no-print">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/dashboard">CloudInventory</a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link" href="/dashboard">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/inventory">Inventaris Barang</a></li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item"><a class="nav-link" href="/profile">Profil ({{ session.username }})</a></li>
+                    <li class="nav-item"><a class="nav-link text-danger" href="/logout">Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+
+    <div class="container">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show no-print">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- TAMPILAN 1: LOGIN -->
+        {% if page == 'login' %}
+        <div class="row justify-content-center mt-5">
+            <div class="col-md-4">
+                <div class="card p-4 shadow-sm">
+                    <h3 class="text-center mb-3">Login</h3>
+                    <form action="/login" method="POST">
+                        <input type="email" name="email" class="form-control mb-3" placeholder="Email" required>
+                        <input type="password" name="password" class="form-control mb-3" placeholder="Password" required>
+                        <button type="submit" class="btn btn-primary w-100">Masuk</button>
+                    </form>
+                    <p class="mt-3 text-center">Belum punya akun? <a href="/register">Daftar</a></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAMPILAN 2: REGISTER -->
+        {% elif page == 'register' %}
+        <div class="row justify-content-center mt-5">
+            <div class="col-md-4">
+                <div class="card p-4 shadow-sm">
+                    <h3 class="text-center mb-3">Registrasi</h3>
+                    <form action="/register" method="POST">
+                        <input type="text" name="username" class="form-control mb-3" placeholder="Username" required>
+                        <input type="email" name="email" class="form-control mb-3" placeholder="Email" required>
+                        <input type="password" name="password" class="form-control mb-3" placeholder="Password" required>
+                        <button type="submit" class="btn btn-success w-100">Daftar</button>
+                    </form>
+                    <p class="mt-3 text-center">Sudah punya akun? <a href="/login">Login</a></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAMPILAN 3: DASHBOARD -->
+        {% elif page == 'dashboard' %}
+        <h2 class="mb-4">Dashboard Ringkasan</h2>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Jenis Barang</h5>
+                        <h2 class="fw-bold">{{ stats.total_items or 0 }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Stok Barang</h5>
+                        <h2 class="fw-bold">{{ stats.total_stock or 0 }}</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mt-3">
+            <div class="card-header fw-bold">Distribusi Kategori</div>
+            <ul class="list-group list-group-flush">
+                {% for cat in categories %}
+                <li class="list-group-item d-flex justify-content-between">
+                    <span>{{ cat.category }}</span>
+                    <span class="badge bg-secondary rounded-pill">{{ cat.count }} Item</span>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- TAMPILAN 4: PROFIL -->
+        {% elif page == 'profile' %}
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card p-4 shadow-sm">
+                    <h3>Pengaturan Profil User</h3>
+                    <form action="/profile" method="POST">
+                        <div class="mb-3">
+                            <label>Email (Tidak dapat diubah)</label>
+                            <input type="email" class="form-control" value="{{ session.email }}" disabled>
+                        </div>
+                        <div class="mb-3">
+                            <label>Username</label>
+                            <input type="text" name="username" class="form-control" value="{{ session.username }}" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Update Profil</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAMPILAN 5: INVENTARIS (CRUD & CETAK) -->
+        {% elif page == 'inventory' %}
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2>Daftar Inventaris Barang</h2>
+            <div class="no-print">
+                <button onclick="window.print()" class="btn btn-secondary me-2">Cetak Rekap (PDF)</button>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addModal">+ Tambah Barang</button>
+            </div>
+        </div>
+
+        <form method="GET" action="/inventory" class="row g-2 mb-4 no-print">
+            <div class="col-md-6">
+                <input type="text" name="search" class="form-control" placeholder="Cari nama barang..." value="{{ search_query }}">
+            </div>
+            <div class="col-md-4">
+                <input type="text" name="category" class="form-control" placeholder="Filter kategori..." value="{{ filter_category }}">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-dark w-100">Cari</button>
+            </div>
+        </form>
+
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Nama Barang</th>
+                    <th>Kategori</th>
+                    <th>Stok</th>
+                    <th>Harga (Rp)</th>
+                    <th class="no-print">Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ item.id }}</td>
+                    <td>{{ item.name }}</td>
+                    <td><span class="badge bg-info text-dark">{{ item.category }}</span></td>
+                    <td>{{ item.stock }}</td>
+                    <td>{{ "{:,.0f}".format(item.price) }}</td>
+                    <td class="no-print">
+                        <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editModal{{ item.id }}">Edit</button>
+                        <a href="/item/delete/{{ item.id }}" class="btn btn-sm btn-danger" onclick="return confirm('Yakin hapus barang ini?')">Hapus</a>
+                    </td>
+                </tr>
+
+                <!-- Modal Edit -->
+                <div class="modal fade" id="editModal{{ item.id }}" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <form action="/item/edit/{{ item.id }}" method="POST">
+                                <div class="modal-header"><h5 class="modal-title">Edit Barang</h5></div>
+                                <div class="modal-body">
+                                    <input type="text" name="name" class="form-control mb-2" value="{{ item.name }}" required>
+                                    <input type="text" name="category" class="form-control mb-2" value="{{ item.category }}" required>
+                                    <input type="number" name="stock" class="form-control mb-2" value="{{ item.stock }}" required>
+                                    <input type="number" name="price" class="form-control mb-2" value="{{ item.price }}" required>
+                                </div>
+                                <div class="modal-footer"><button type="submit" class="btn btn-warning">Simpan Perubahan</button></div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Modal Tambah -->
+        <div class="modal fade" id="addModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form action="/item/add" method="POST">
+                        <div class="modal-header"><h5 class="modal-title">Tambah Barang Baru</h5></div>
+                        <div class="modal-body">
+                            <input type="text" name="name" class="form-control mb-2" placeholder="Nama Barang" required>
+                            <input type="text" name="category" class="form-control mb-2" placeholder="Kategori" required>
+                            <input type="number" name="stock" class="form-control mb-2" placeholder="Jumlah Stok" required>
+                            <input type="number" name="price" class="form-control mb-2" placeholder="Harga Satuan" required>
+                        </div>
+                        <div class="modal-footer"><button type="submit" class="btn btn-primary">Simpan</button></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Memanggil JS Lokal dari static/js/bootstrap.bundle.min.js -->
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+</body>
+</html>

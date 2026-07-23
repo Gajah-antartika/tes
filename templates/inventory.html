@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Daftar Inventaris Barang</h2>
+    <div class="no-print">
+        <!-- FITUR 8: CETAK PDF / REKAP -->
+        <button onclick="window.print()" class="btn btn-secondary me-2">Cetak Rekap (PDF)</button>
+        <!-- FITUR 4: TAMBAH DATA (MODAL TRIGGER) -->
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addModal">+ Tambah Barang</button>
+    </div>
+</div>
+
+<!-- FITUR 5: PENCARIAN & FILTER -->
+<form method="GET" action="/inventory" class="row g-2 mb-4 no-print">
+    <div class="col-md-6">
+        <input type="text" name="search" class="form-control" placeholder="Cari nama barang..." value="{{ search_query }}">
+    </div>
+    <div class="col-md-4">
+        <input type="text" name="category" class="form-control" placeholder="Filter kategori..." value="{{ filter_category }}">
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-dark w-100">Cari</button>
+    </div>
+</form>
+
+<table class="table table-bordered table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th>ID</th>
+            <th>Nama Barang</th>
+            <th>Kategori</th>
+            <th>Stok</th>
+            <th>Harga (Rp)</th>
+            <th class="no-print">Aksi</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in items %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ item.name }}</td>
+            <td><span class="badge bg-info text-dark">{{ item.category }}</span></td>
+            <td>{{ item.stock }}</td>
+            <td>{{ "{:,.0f}".format(item.price) }}</td>
+            <td class="no-print">
+                <!-- FITUR 6: EDIT DATA -->
+                <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editModal{{ item.id }}">Edit</button>
+                <!-- FITUR 7: HAPUS DATA -->
+                <a href="/item/delete/{{ item.id }}" class="btn btn-sm btn-danger" onclick="return confirm('Yakin hapus barang ini?')">Hapus</a>
+            </td>
+        </tr>
+
+        <!-- Modal Edit -->
+        <div class="modal fade" id="editModal{{ item.id }}" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form action="/item/edit/{{ item.id }}" method="POST">
+                        <div class="modal-header"><h5 class="modal-title">Edit Barang</h5></div>
+                        <div class="modal-body">
+                            <input type="text" name="name" class="form-control mb-2" value="{{ item.name }}" required>
+                            <input type="text" name="category" class="form-control mb-2" value="{{ item.category }}" required>
+                            <input type="number" name="stock" class="form-control mb-2" value="{{ item.stock }}" required>
+                            <input type="number" name="price" class="form-control mb-2" value="{{ item.price }}" required>
+                        </div>
+                        <div class="modal-footer"><button type="submit" class="btn btn-warning">Simpan Perubahan</button></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Modal Tambah Barang -->
+<div class="modal fade" id="addModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="/item/add" method="POST">
+                <div class="modal-header"><h5 class="modal-title">Tambah Barang Baru</h5></div>
+                <div class="modal-body">
+                    <input type="text" name="name" class="form-control mb-2" placeholder="Nama Barang" required>
+                    <input type="text" name="category" class="form-control mb-2" placeholder="Kategori" required>
+                    <input type="number" name="stock" class="form-control mb-2" placeholder="Jumlah Stok" required>
+                    <input type="number" name="price" class="form-control mb-2" placeholder="Harga Satuan" required>
+                </div>
+                <div class="modal-footer"><button type="submit" class="btn btn-primary">Simpan</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

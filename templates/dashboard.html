@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2 class="mb-4">Dashboard Ringkasan</h2>
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <h5 class="card-title">Total Jenis Barang</h5>
+                <h2 class="fw-bold">{{ stats.total_items or 0 }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <h5 class="card-title">Total Stok Barang</h5>
+                <h2 class="fw-bold">{{ stats.total_stock or 0 }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="card mt-3">
+    <div class="card-header fw-bold">Distribusi Kategori</div>
+    <ul class="list-group list-group-flush">
+        {% for cat in categories %}
+        <li class="list-group-item d-flex justify-content-between">
+            <span>{{ cat.category }}</span>
+            <span class="badge bg-secondary rounded-pill">{{ cat.count }} Item</span>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

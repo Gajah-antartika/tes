@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Inventaris Cloud</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        @media print {
+            .no-print { display: none !important; }
+        }
+    </style>
+    <style>
+    /* Font modern dari Google Fonts */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: #f4f6f9 !important;
+        color: #333;
+    }
+
+    /* Navbar Modern */
+    .navbar {
+        background: linear-gradient(135deg, #1e293b, #0f172a) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        padding: 0.8rem 1rem;
+    }
+
+    .navbar-brand {
+        letter-spacing: 0.5px;
+    }
+
+    /* Card & Stats Styling */
+    .card {
+        border: none !important;
+        border-radius: 12px !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Gradient Cards untuk Dashboard */
+    .card-gradient-primary {
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8) !important;
+        color: white;
+    }
+
+    .card-gradient-success {
+        background: linear-gradient(135deg, #10b981, #047857) !important;
+        color: white;
+    }
+
+    /* Tabel Modern */
+    .table-container {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .table {
+        margin-bottom: 0;
+    }
+
+    .table thead th {
+        background-color: #f8fafc !important;
+        color: #64748b;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    /* Tombol & Form Control */
+    .btn {
+        border-radius: 8px !important;
+        padding: 0.5rem 1.25rem;
+        font-weight: 500;
+    }
+
+    .form-control, .form-select {
+        border-radius: 8px !important;
+        border: 1px solid #cbd5e1;
+        padding: 0.6rem 0.8rem;
+    }
+
+    .form-control:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
+
+    /* Modal Styling */
+    .modal-content {
+        border-radius: 16px !important;
+        border: none;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Print styling tetap rapi */
+    @media print {
+        .no-print { display: none !important; }
+        body { background: white !important; }
+        .card { box-shadow: none !important; }
+    }
+</style>
+</head>
+<body class="bg-light">
+    {% if session.user_id %}
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 no-print">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/dashboard">CloudInventory</a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link" href="/dashboard">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/inventory">Inventaris Barang</a></li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item"><a class="nav-link" href="/profile">Profil ({{ session.username }})</a></li>
+                    <li class="nav-item"><a class="nav-link text-danger" href="/logout">Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show no-print">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
